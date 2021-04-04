@@ -20,23 +20,26 @@ export default function Availability() {
   const routerQuery = router.query;
 
   useEffect(() => {
-    if (!!routerQuery.type) {
+    if (!routerQuery.type) {
       router.push("/");
     }
   }, []);
 
   const bookingSearch = {
     type: routerQuery.type,
-    departure_date: String(routerQuery.departure_date),
-    return_date: String(routerQuery.return_date),
+    departure_date:
+      !!routerQuery.departure_date && String(routerQuery.departure_date),
+    return_date: !!routerQuery.return_date && String(routerQuery.return_date),
     origin: routerQuery.origin,
     destination: routerQuery.destination,
     passengers: {
-      adults: routerQuery["passengers.adults"],
-      children: routerQuery["passengers.children"],
-      babies: routerQuery["passengers.babies"],
+      adults: routerQuery["passengers.adults"] || 0,
+      children: routerQuery["passengers.children"] || 0,
+      babies: routerQuery["passengers.babies"] || 0,
     },
   };
+
+  console.log(bookingSearch.departure_date);
 
   const bookingsResult = [
     {
@@ -104,11 +107,17 @@ export default function Availability() {
               <Stack alignItems="center" spacing="8" direction="row">
                 <Box>
                   <Heading size="sm">Ida</Heading>
-                  <Text>{formatDate(bookingSearch.departure_date)}</Text>
+                  <Text>
+                    {!!bookingSearch.departure_date &&
+                      formatDate(bookingSearch.departure_date)}
+                  </Text>
                 </Box>
                 <Box>
                   <Heading size="sm">Volta</Heading>
-                  <Text>{formatDate(bookingSearch.return_date)}</Text>
+                  <Text>
+                    {!!bookingSearch.return_date &&
+                      formatDate(bookingSearch.return_date)}
+                  </Text>
                 </Box>
               </Stack>
               <Stack alignItems="center" spacing="4" direction="row">
