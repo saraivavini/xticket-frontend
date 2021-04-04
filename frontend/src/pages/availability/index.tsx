@@ -13,12 +13,17 @@ import { ArrowForwardIcon } from "@chakra-ui/icons";
 import { format } from "date-fns";
 import { api } from "../../services/api";
 import { getStripeJs } from "../../services/stripe-js";
+import { useEffect } from "react";
 
 export default function Availability() {
   const router = useRouter();
   const routerQuery = router.query;
 
-  console.log(router.query);
+  useEffect(() => {
+    if (!!routerQuery.type) {
+      router.push("/");
+    }
+  }, []);
 
   const bookingSearch = {
     type: routerQuery.type,
