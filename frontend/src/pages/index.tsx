@@ -187,16 +187,16 @@ export default function Home() {
               error={errors.departure_date}
               {...register("departure_date")}
             />
-            {airfareType === "IDA_E_VOLTA" ||
-              (formType === "ACCOMMODATIONS" && (
-                <Input
-                  type="date"
-                  name="return_date"
-                  label="Data de retorno"
-                  error={errors.return_date}
-                  {...register("return_date")}
-                />
-              ))}
+            {(airfareType === "IDA_E_VOLTA" ||
+              formType === "ACCOMMODATIONS") && (
+              <Input
+                type="date"
+                name="return_date"
+                label="Data de retorno"
+                error={errors.return_date}
+                {...register("return_date")}
+              />
+            )}
           </Stack>
           <Stack direction={["column", "row"]} spacing="8">
             <NumberInput
