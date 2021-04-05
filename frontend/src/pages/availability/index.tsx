@@ -20,18 +20,20 @@ export default function Availability() {
   const routerQuery = router.query;
 
   useEffect(() => {
-    if (!routerQuery.type) {
+    if (!routerQuery.formType) {
       router.push("/");
     }
   }, []);
 
   const bookingSearch = {
+    formType: routerQuery.formType,
     type: routerQuery.type,
     departure_date:
       !!routerQuery.departure_date && String(routerQuery.departure_date),
     return_date: !!routerQuery.return_date && String(routerQuery.return_date),
     origin: routerQuery.origin,
     destination: routerQuery.destination,
+    bedroom_number: routerQuery.bedroom_number,
     passengers: {
       adults: routerQuery["passengers.adults"] || 0,
       children: routerQuery["passengers.children"] || 0,
@@ -39,16 +41,19 @@ export default function Availability() {
     },
   };
 
-  console.log(bookingSearch.departure_date);
-
   const bookingsResult = [
     {
+      company:
+        bookingSearch.formType === "AIRFARE" ? "TAM" : "Hotel Dona Silvana",
       cost: 1041.21,
     },
     {
+      company: bookingSearch.formType === "AIRFARE" ? "AZUL" : "Ocean Hotal",
       cost: 1588.9,
     },
     {
+      company:
+        bookingSearch.formType === "AIRFARE" ? "GOL" : "Acomodações Pereira",
       cost: 1700,
     },
   ];
@@ -86,17 +91,21 @@ export default function Availability() {
         borderRadius={8}
         flexDir="column"
       >
-        <Stack bg="gray.100" p="8" borderRadius="md">
+        <Stack bg="gray.100" p="8" borderRadius="md" alignItems="center">
           <Flex direction="column">
             <Stack alignItems="center" spacing="10" direction="row">
               <Stack alignItems="center" spacing="4" direction="row">
-                <Box>
-                  <Heading size="sm" pb="1">
-                    Origem
-                  </Heading>
-                  <Text>{bookingSearch.origin}</Text>
-                </Box>
-                <ArrowForwardIcon h={5} w={5} />
+                {bookingSearch.formType === "AIRFARE" && (
+                  <>
+                    <Box>
+                      <Heading size="sm" pb="1">
+                        Origem
+                      </Heading>
+                      <Text>{bookingSearch.origin}</Text>
+                    </Box>
+                    <ArrowForwardIcon h={5} w={5} />
+                  </>
+                )}
                 <Box>
                   <Heading size="sm" pb="1">
                     Destino
@@ -112,23 +121,37 @@ export default function Availability() {
                       formatDate(bookingSearch.departure_date)}
                   </Text>
                 </Box>
-                <Box>
-                  <Heading size="sm">Volta</Heading>
-                  <Text>
-                    {!!bookingSearch.return_date &&
-                      formatDate(bookingSearch.return_date)}
-                  </Text>
-                </Box>
+                {bookingSearch.type === "IDA_E_VOLTA" ||
+                  (bookingSearch.formType === "ACCOMMODATIONS" && (
+                    <Box>
+                      <Heading size="sm">Volta</Heading>
+                      <Text>
+                        {!!bookingSearch.return_date &&
+                          formatDate(bookingSearch.return_date)}
+                      </Text>
+                    </Box>
+                  ))}
               </Stack>
               <Stack alignItems="center" spacing="4" direction="row">
                 <Box>
-                  <Heading size="sm">Passageiros</Heading>
+                  <Heading size="sm">
+                    {bookingSearch.formType === "AIRFARE"
+                      ? "Passageiros"
+                      : "Hospedes"}
+                  </Heading>
                   <Text>
                     {Number(bookingSearch.passengers.adults) +
                       Number(bookingSearch.passengers.children) +
                       Number(bookingSearch.passengers.babies)}
                   </Text>
                 </Box>
+                {bookingSearch.formType === "ACCOMMODATIONS" &&
+                  bookingSearch.bedroom_number && (
+                    <Box>
+                      <Heading size="sm">Quartos</Heading>
+                      <Text>{Number(bookingSearch.bedroom_number)}</Text>
+                    </Box>
+                  )}
               </Stack>
             </Stack>
           </Flex>
@@ -142,22 +165,28 @@ export default function Availability() {
               align="center"
             >
               <Box>
-                <Heading size="md">Total</Heading>
-                <Text>
-                  {Intl.NumberFormat("pt-BR", {
-                    style: "currency",
-                    currency: "BRL",
-                  }).format(b.cost)}
-                </Text>
+                {/* <Heading size="md"></Heading> */}
+                <Text>{b.company}</Text>
               </Box>
-              <Box>
-                <Button
-                  colorScheme="blue"
-                  onClick={() => handlePurchase(b.cost)}
-                >
-                  Realizar pedido
-                </Button>
-              </Box>
+              <Stack direction={["column", "row"]} spacing="16">
+                <Box>
+                  <Heading size="md">Total</Heading>
+                  <Text>
+                    {Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(b.cost)}
+                  </Text>
+                </Box>
+                <Box>
+                  <Button
+                    colorScheme="blue"
+                    onClick={() => handlePurchase(b.cost)}
+                  >
+                    Realizar pedido
+                  </Button>
+                </Box>
+              </Stack>
             </Flex>
           ))}
         </Stack>
