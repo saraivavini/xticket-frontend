@@ -20,6 +20,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useEffect } from "react";
 import { useRouter } from "next/router";
+import { format } from "date-fns";
 
 interface AirFaresAvailabilityFormData {
   formType: "AIRFARE" | "ACCOMMODATIONS";
@@ -60,9 +61,12 @@ const airFareAvailabilityFormSchema = yup.object().shape({
     .date()
     .nullable()
     .transform((curr, orig) => (orig === "" ? null : curr))
-    .when(["type", "departure_date"], {
-      is: (type, departure_date) => {
-        return type === "IDA_E_VOLTA" && !!departure_date;
+    .when(["formType", "type", "departure_date"], {
+      is: (formType, type, departure_date) => {
+        return (
+          (formType === "ACCOMMODATIONS" || type === "IDA_E_VOLTA") &&
+          !!departure_date
+        );
       },
       then: yup
         .date()
@@ -100,10 +104,9 @@ export default function Home() {
 
   const [airfareType, setAirfareType] = useState("IDA_E_VOLTA");
   const [formType, setFormType] = useState("AIRFARE");
-
-  console.log(errors);
-
-  console.log(getValues());
+  const [minReturnDate, setMinReturnDate] = useState(
+    format(new Date(), "yyyy-MM-dd")
+  );
 
   useEffect(() => {
     setValue("type", airfareType);
@@ -117,8 +120,6 @@ export default function Home() {
   const handleSearchAirFaresAvailability: SubmitHandler<AirFaresAvailabilityFormData> = (
     data
   ) => {
-    console.log(data);
-
     router.push({
       pathname: "/availability",
       query: {
@@ -185,6 +186,7 @@ export default function Home() {
               name="departure_date"
               label="Data de partida"
               error={errors.departure_date}
+              min={minReturnDate}
               {...register("departure_date")}
             />
             {(airfareType === "IDA_E_VOLTA" ||
@@ -194,6 +196,7 @@ export default function Home() {
                 name="return_date"
                 label="Data de retorno"
                 error={errors.return_date}
+                min={minReturnDate}
                 {...register("return_date")}
               />
             )}
