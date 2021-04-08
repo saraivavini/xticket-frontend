@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/router";
 import {
   Box,
@@ -14,13 +14,74 @@ import { format } from "date-fns";
 import { api } from "../../services/api";
 import { getStripeJs } from "../../services/stripe-js";
 import { useEffect } from "react";
+import { backendApi } from "../../services/backend-api";
 
 export default function Availability() {
   const router = useRouter();
   const routerQuery = router.query;
 
+  const formatDate = (date: string) => {
+    return format(new Date(date), "dd/MM/yyyy");
+  };
+
   useEffect(() => {
-    if (!routerQuery.formType) {
+    const departure_date =
+      !!routerQuery.departure_date &&
+      format(new Date(String(routerQuery.departure_date)), "yyyy-MM-dd");
+    const return_date =
+      !!routerQuery.return_date &&
+      format(new Date(String(routerQuery.return_date)), "yyyy-MM-dd");
+
+    if (routerQuery.formType === "AIRFARE") {
+      backendApi
+        .get(`airfares/availability`, {
+          params: {
+            type: routerQuery.type,
+            departure_date,
+            return_date: !!return_date ? return_date : departure_date,
+            origin: routerQuery.origin,
+            destination: routerQuery.destination,
+            "passengers[adults]": routerQuery["passengers.adults"] || 0,
+            "passengers[children]": routerQuery["passengers.children"] || 0,
+            "passengers[babies]": routerQuery["passengers.babies"] || 0,
+          },
+        })
+        .then((resp) => {
+          const result = resp.data.map((item) => {
+            return {
+              firm: item.firm,
+              price: item.price,
+            };
+          });
+
+          setBookingsResult(result);
+        })
+        .catch((error) => console.log(error.message));
+    } else if (routerQuery.formType === "ACCOMMODATIONS") {
+      backendApi
+        .get(`accommodations/availability`, {
+          params: {
+            departure_date,
+            return_date: !!return_date ? return_date : departure_date,
+            destination: routerQuery.destination,
+            bedrooms_number: routerQuery.bedroom_number,
+            "guests[adults]": routerQuery["passengers.adults"] || 0,
+            "guests[children]": routerQuery["passengers.children"] || 0,
+            "guests[babies]": routerQuery["passengers.babies"] || 0,
+          },
+        })
+        .then((resp) => {
+          const result = resp.data.map((item) => {
+            return {
+              firm: item.firm || "",
+              price: item.price,
+            };
+          });
+
+          setBookingsResult(result);
+        })
+        .catch((error) => console.log(error.message));
+    } else {
       router.push("/");
     }
   }, []);
@@ -41,26 +102,7 @@ export default function Availability() {
     },
   };
 
-  const bookingsResult = [
-    {
-      company:
-        bookingSearch.formType === "AIRFARE" ? "TAM" : "Hotel Dona Silvana",
-      cost: 1041.21,
-    },
-    {
-      company: bookingSearch.formType === "AIRFARE" ? "AZUL" : "Ocean Hotal",
-      cost: 1588.9,
-    },
-    {
-      company:
-        bookingSearch.formType === "AIRFARE" ? "GOL" : "Acomodações Pereira",
-      cost: 1700,
-    },
-  ];
-
-  const formatDate = (date: string) => {
-    return format(new Date(date), "dd/MM/yyyy");
-  };
+  const [bookingsResult, setBookingsResult] = useState([]);
 
   const handlePurchase = async (cost: number) => {
     try {
@@ -166,7 +208,7 @@ export default function Availability() {
             >
               <Box>
                 {/* <Heading size="md"></Heading> */}
-                <Text>{b.company}</Text>
+                <Text>{String(b.firm).toUpperCase()}</Text>
               </Box>
               <Stack direction={["column", "row"]} spacing="16">
                 <Box>
@@ -175,13 +217,13 @@ export default function Availability() {
                     {Intl.NumberFormat("pt-BR", {
                       style: "currency",
                       currency: "BRL",
-                    }).format(b.cost)}
+                    }).format(b.price)}
                   </Text>
                 </Box>
                 <Box>
                   <Button
                     colorScheme="blue"
-                    onClick={() => handlePurchase(b.cost)}
+                    onClick={() => handlePurchase(b.price)}
                   >
                     Realizar pedido
                   </Button>
