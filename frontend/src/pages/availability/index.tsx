@@ -163,16 +163,16 @@ export default function Availability() {
                       formatDate(bookingSearch.departure_date)}
                   </Text>
                 </Box>
-                {bookingSearch.type === "IDA_E_VOLTA" ||
-                  (bookingSearch.formType === "ACCOMMODATIONS" && (
-                    <Box>
-                      <Heading size="sm">Volta</Heading>
-                      <Text>
-                        {!!bookingSearch.return_date &&
-                          formatDate(bookingSearch.return_date)}
-                      </Text>
-                    </Box>
-                  ))}
+                {(bookingSearch.type === "IDA_E_VOLTA" ||
+                  bookingSearch.formType === "ACCOMMODATIONS") && (
+                  <Box>
+                    <Heading size="sm">Volta</Heading>
+                    <Text>
+                      {!!bookingSearch.return_date &&
+                        formatDate(bookingSearch.return_date)}
+                    </Text>
+                  </Box>
+                )}
               </Stack>
               <Stack alignItems="center" spacing="4" direction="row">
                 <Box>
