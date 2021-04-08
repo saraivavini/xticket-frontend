@@ -30,6 +30,7 @@ export default function Availability() {
       format(new Date(String(routerQuery.departure_date)), "yyyy-MM-dd");
     const return_date =
       !!routerQuery.return_date &&
+      routerQuery.return_date != "null" &&
       format(new Date(String(routerQuery.return_date)), "yyyy-MM-dd");
 
     if (routerQuery.formType === "AIRFARE") {
@@ -81,8 +82,6 @@ export default function Availability() {
           setBookingsResult(result);
         })
         .catch((error) => console.log(error.message));
-    } else {
-      router.push("/");
     }
   }, []);
 
